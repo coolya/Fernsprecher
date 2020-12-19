@@ -1,0 +1,28 @@
+<idea-plugin>
+    <id>ws.logv.Fernsprecher</id>
+    <name>Fernsprecher</name>
+    <vendor email="kolja.dummann@logv.ws" url="https://logv.ws">Kolja Dummann</vendor>
+
+    <description><![CDATA[
+    View your IntelliJ based IDE logs directly in your browser. Useful for plugin development or language developers using MPS.
+    Especially on Windows where you do no longer need to modify the startup file to get a Java console showing the logs.
+    ]]></description>
+
+    <!-- please see https://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
+         on how to target different products -->
+    <depends>com.intellij.modules.platform</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <!-- Add your extensions here -->
+        <httpRequestHandler implementation="ws.logv.fernsprecher.RootPageHandler" />
+        <httpRequestHandler implementation="ws.logv.fernsprecher.WebSocketLogForwarder" order="first" />
+    </extensions>
+
+    <actions>
+        <!-- Add your actions here -->
+        <action id="ws.logv.fernsprecher.OpenLogsInBrowserAction" class="ws.logv.fernsprecher.OpenLogsInBrowserAction"
+                text="Open Logs in Browser" description="Open the IntelliJ logs inside a browser with live updates.">
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+        </action>
+    </actions>
+</idea-plugin>

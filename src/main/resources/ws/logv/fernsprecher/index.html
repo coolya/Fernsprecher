@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Fernsprecher - log view</title>
+    <script src="script.js"></script>
+    <style>
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        #container {
+            margin-left: auto;
+            margin-right: auto;
+            min-width: 1024px;
+        }
+
+        #header {
+            margin-top: 30px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        #header > div {
+            display: inline-block;
+            vertical-align: text-bottom;
+        }
+
+        #header h1 {
+            display: inline-block;
+            font-family: Arial, Helvetica, sans-serif;
+            vertical-align: top;
+            font-weight: bold;
+            font-size: 36px;
+            margin-bottom: 5px;
+        }
+
+        #header p {
+            text-align: left;
+            margin-top: 0;
+            margin-left: 2px;
+        }
+
+        #header img {
+            display: inline-block;
+            width: 100px;
+        }
+
+        #logs table {
+            width: 100%;
+            table-layout: fixed;
+
+            border-spacing: 1;
+            border-collapse: collapse;
+            background: #fff;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        #logs tbody {
+            font-family: "Lucida Console", "Courier New", monospace;
+            word-wrap: break-word;
+        }
+
+        #logs thead {
+            font-weight: bold;
+        }
+
+        #logs table thead tr {
+            height: 60px;
+            background: #36304a;
+        }
+
+        #logs thead th {
+            position: sticky;
+            top: 0; /* Don't forget this, required for the stickiness */
+            font-size: 18px;
+            color: #fff;
+            line-height: 1.2;
+            font-weight: unset;
+            background: #36304a;
+        }
+
+        #logs td {
+            padding-top: 14px;
+            padding-bottom: 14px;
+            vertical-align: baseline;
+        }
+
+        #logs td:nth-child(1), #logs td:nth-child(2) {
+            text-align: center;
+        }
+
+        #logs td:nth-child(3) {
+            text-align: left;
+            word-break: break-all;
+        }
+
+        #logs td:nth-child(4) {
+            vertical-align: baseline;
+            padding-left: 10px;
+        }
+
+        #logs thead th:nth-child(1) {
+            width: 10%;
+        }
+
+        #logs thead th:nth-child(2) {
+            width: 5%;
+        }
+
+        #logs thead th:nth-child(3) {
+            width: 20%;
+            text-align: left;
+            padding-left: 12px;
+        }
+
+        #logs thead th:nth-child(4) {
+            width: 60%;
+            text-align: left;
+            padding-left: 12px;
+        }
+
+        #logs thead th:nth-child(5) {
+            width: 5%;
+        }
+
+        #status-text {
+            position: fixed;
+            left: 26px;
+            top: 4px;
+            z-index: 100;
+        }
+
+        #status-text::before {
+            width: 14px;
+            height: 14px;
+            display: inline-block;
+        }
+
+        #status-text::after {
+            content: attr(data-state); /* here's the magic */
+            position: absolute;
+
+            /* vertically center */
+            top: 50%;
+            transform: translateY(-50%);
+
+            /* move to right */
+            left: 100%;
+            margin-left: 15px; /* and add a small left margin */
+
+            /* basic styles */
+            width: 100px;
+            padding: 5px;
+            border-radius: 10px;
+            background: #000;
+            color: #fff;
+            text-align: center;
+
+            display: none; /* hide by default */
+        }
+
+        #status-text:hover::after {
+            display: block;
+        }
+
+        #status-text[data-state="connecting"]::before {
+
+            content: url("data:image/svg+xml,%3C%3Fxml version='1.0' encoding='UTF-8' standalone='no'%3F%3E%3C!DOCTYPE svg PUBLIC '-//W3C//DTD SVG 1.1//EN' 'http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd'%3E%3Csvg width='100%25' height='100%25' viewBox='0 0 24 24' version='1.1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' xml:space='preserve' xmlns:serif='http://www.serif.com/' style='fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;'%3E%3Cpath d='M12,0C18.623,0 24,5.377 24,12C24,18.623 18.623,24 12,24C5.377,24 0,18.623 0,12C0,5.377 5.377,0 12,0ZM12,2C17.519,2 22,6.481 22,12C22,17.519 17.519,22 12,22C6.481,22 2,17.519 2,12C2,6.481 6.481,2 12,2ZM14,14L14,11L19,15L14,19L14,16L5,16L5,14L14,14ZM10,8L10,5L5,9L10,13L10,10L19,10L19,8L10,8Z' style='fill:rgb(255,102,0);'/%3E%3C/svg%3E");
+        }
+
+        #status-text[data-state="connected"]::before {
+            content: url("data:image/svg+xml,%3C%3Fxml version='1.0' encoding='UTF-8' standalone='no'%3F%3E%3C!DOCTYPE svg PUBLIC '-//W3C//DTD SVG 1.1//EN' 'http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd'%3E%3Csvg width='100%25' height='100%25' viewBox='0 0 24 24' version='1.1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' xml:space='preserve' xmlns:serif='http://www.serif.com/' style='fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;'%3E%3Cpath d='M12,2C17.514,2 22,6.486 22,12C22,17.514 17.514,22 12,22C6.486,22 2,17.514 2,12C2,6.486 6.486,2 12,2ZM12,0C5.373,0 0,5.373 0,12C0,18.627 5.373,24 12,24C18.627,24 24,18.627 24,12C24,5.373 18.627,0 12,0ZM16.393,7.5L10.75,13.284L8.106,10.778L6.25,12.636L10.75,17L18.25,9.357L16.393,7.5Z' style='fill:rgb(0,102,0);fill-rule:nonzero;'/%3E%3C/svg%3E");
+        }
+
+        #status-text[data-state="closed"]::before {
+            content: url("data:image/svg+xml,%3C%3Fxml version='1.0' encoding='UTF-8' standalone='no'%3F%3E%3C!DOCTYPE svg PUBLIC '-//W3C//DTD SVG 1.1//EN' 'http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd'%3E%3Csvg width='100%25' height='100%25' viewBox='0 0 24 24' version='1.1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' xml:space='preserve' xmlns:serif='http://www.serif.com/' style='fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;'%3E%3Cpath d='M12,2C17.514,2 22,6.486 22,12C22,17.514 17.514,22 12,22C6.486,22 2,17.514 2,12C2,6.486 6.486,2 12,2ZM12,0C5.373,0 0,5.373 0,12C0,18.627 5.373,24 12,24C18.627,24 24,18.627 24,12C24,5.373 18.627,0 12,0ZM19,10L5,10L5,14L19,14L19,10Z' style='fill:rgb(204,0,0);fill-rule:nonzero;'/%3E%3C/svg%3E");
+        }
+
+        tr.error td {
+            color: darkred;
+        }
+
+        tr.warn td {
+            color: coral;
+        }
+
+        .stacktrace-data {
+            display: none;
+        }
+
+        .copy {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24'%3E%3Cpath d='M15.143 13.244l.837-2.244 2.698 5.641-5.678 2.502.805-2.23s-8.055-3.538-7.708-10.913c2.715 5.938 9.046 7.244 9.046 7.244zm8.857-7.244v18h-18v-6h-6v-18h18v6h6zm-2 2h-12.112c-.562-.578-1.08-1.243-1.521-2h7.633v-4h-14v14h4v-3.124c.6.961 1.287 1.823 2 2.576v6.548h14v-14z'/%3E%3C/svg%3E");
+            width: 16px;
+            height: 16px;
+            background-position: center;
+            background-size: cover;
+            border: none;
+            margin: 5px;
+            display: inline-block;
+            float: right;
+        }
+
+        .tooltip::before {
+            content: attr(data-tooltip); /* here's the magic */
+            position: relative;
+            transform: translateY(-25%);
+            left: -150px;
+            /* vertically center */
+            top: 50%;
+
+            margin-left: 15px; /* and add a small left margin */
+
+            /* basic styles */
+            width: 100px;
+            padding: 5px;
+            border-radius: 10px;
+            background: #000;
+            color: #fff;
+            text-align: center;
+
+            display: none; /* hide by default */
+        }
+
+        .tooltip:hover::before {
+            display: block;
+        }
+
+
+        #header img.icon {
+            width: 18px;
+            vertical-align: middle;
+            padding-bottom: 2px;
+        }
+
+        #about p {
+            display: inline-block;
+        }
+
+        #about a {
+            text-decoration: none;
+            color: #36304a;
+        }
+
+        #about {
+            position: absolute;
+            right: 10px;
+        }
+
+        #plugin ul {
+            list-style: none;
+            text-align: right;
+        }
+
+        #plugin li img {
+            width: 16px;
+            vertical-align: middle;
+            padding-bottom: 2px;
+        }
+    </style>
+</head>
+<body>
+<div id="container">
+    <div id="header">
+        <img id="logo"
+             src="data:image/svg+xml,%3C%3Fxml version='1.0' encoding='UTF-8' standalone='no'%3F%3E%3C!DOCTYPE svg PUBLIC '-//W3C//DTD SVG 1.1//EN' 'http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd'%3E%3Csvg width='100%25' height='100%25' viewBox='0 0 2309 2309' version='1.1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' xml:space='preserve' xmlns:serif='http://www.serif.com/' style='fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:1.5;'%3E%3Crect id='Artboard1' x='0' y='0' width='2308.33' height='2308.33' style='fill:none;'/%3E%3Cg%3E%3Crect x='29.167' y='29.167' width='2250' height='2250' style='fill:%23dab200;'/%3E%3Cpath d='M2279.17,29.167l-2250,-0l-0,2250l2250,-0l-0,-2250Zm-2191.67,58.333l0,2133.33l2133.33,0l0,-2133.33l-2133.33,0Z'/%3E%3Cg%3E%3Cg%3E%3Cpath d='M1169.84,1092.91c46.049,-0.018 83.513,-37.5 83.494,-83.562c-0.019,-46.062 -37.501,-83.525 -83.562,-83.506c-46.049,0.019 -83.5,37.5 -83.481,83.575c0.019,46.062 37.5,83.512 83.549,83.493Zm-0.052,-128.337c24.702,-0.01 44.818,20.089 44.828,44.804c0.01,24.702 -20.089,44.818 -44.792,44.828c-24.702,0.01 -44.805,-20.089 -44.815,-44.791c-0.01,-24.728 20.076,-44.831 44.779,-44.841Zm493.58,-498.932l-53.018,0.022l-28.632,-77.812c-2.804,-7.613 -10.059,-12.669 -18.177,-12.666l-97.776,0.04l-0.019,-47.184c-0.005,-10.7 -8.681,-19.356 -19.367,-19.352l-553.67,0.228c-10.699,0.004 -19.356,8.668 -19.351,19.367l0.019,47.185l-97.776,0.04c-8.118,0.003 -15.369,5.065 -18.167,12.681l-28.58,77.835l-78.108,0.032c-9.266,0.004 -17.24,6.577 -19.004,15.676l-31.862,164.617c-1.095,5.666 0.392,11.551 4.072,16.002c3.68,4.464 9.153,7.043 14.935,7.04l204.961,-0.084c10.7,-0.004 19.356,-8.668 19.352,-19.367l-0.068,-164.604c-0.005,-10.699 -8.668,-19.355 -19.367,-19.351l-53.664,0.022l19.028,-51.787l84.264,-0.034l0.02,47.197c0.004,10.699 8.667,19.356 19.367,19.351l553.656,-0.227c10.687,-0.005 19.356,-8.668 19.351,-19.367l-0.019,-47.198l84.264,-0.034l19.057,51.771l-38.808,0.016c-10.686,0.004 -19.356,8.668 -19.351,19.367l0.227,553.644c0.005,10.686 8.681,19.355 19.367,19.351l47.185,-0.02l0.035,84.393l-99,37.184l-0.208,-504.42c-0.004,-10.699 -8.681,-19.355 -19.367,-19.351l-73.177,0.03l-0.049,-118.168c-0.004,-10.699 -8.68,-19.355 -19.367,-19.351c-10.686,0.005 -19.355,8.668 -19.351,19.367l0.049,118.168l-355.226,0.146l-0.049,-118.168c-0.004,-10.699 -8.668,-19.355 -19.367,-19.351c-10.699,0.005 -19.356,8.668 -19.351,19.367l0.048,118.168l-73.164,0.03c-10.699,0.005 -19.356,8.668 -19.351,19.367l0.267,648.775l-55.819,0.022c-10.699,0.005 -19.356,8.681 -19.351,19.368l0.037,90.51c0.004,10.686 8.668,19.355 19.367,19.351l729.36,-0.3c10.686,-0.004 19.355,-8.681 19.351,-19.367l-0.037,-90.51c-0.005,-10.686 -8.681,-19.356 -19.367,-19.351l-55.806,0.023l-0.042,-102.978l125.156,-47.016c7.549,-2.843 12.553,-10.059 12.55,-18.126l-0.04,-97.802l47.172,-0.019c10.686,-0.004 19.355,-8.681 19.351,-19.367l-0.228,-553.67c-0.004,-10.686 -8.681,-19.355 -19.367,-19.351Zm-858.882,164.957l-162.138,0.067l24.379,-125.896l137.708,-0.057l0.051,125.886Zm622.575,-188.801l-514.938,0.212l-0.039,-94.382l514.939,-0.211l0.038,94.381Zm88.239,972.655l-690.642,0.284l-0.021,-51.792l690.629,-0.284l0.021,51.792l0.013,-0Zm-615.501,-90.244l-0.122,-295.355l64.105,-0.027c9.839,105.103 98.485,187.627 206.109,187.582c114.154,-0.046 206.988,-92.957 206.941,-207.111c-0.047,-114.154 -92.957,-206.987 -207.111,-206.941c-107.611,0.045 -196.203,82.641 -205.955,187.752l-64.105,0.026l-0.121,-295.342l540.286,-0.222l0.259,629.416l-540.286,0.222Zm136.912,-334.13l-34.008,0.014c9.607,-83.7 80.783,-148.982 167.034,-149.017c92.794,-0.039 168.339,75.431 168.377,168.238c0.038,92.808 -75.444,168.339 -168.239,168.377c-86.251,0.036 -157.481,-65.188 -167.156,-148.88l34.008,-0.014c10.699,-0.004 19.355,-8.681 19.351,-19.367c-0.005,-10.686 -8.668,-19.355 -19.367,-19.351Zm607.526,29.228l-94.369,0.039l-0.212,-514.939l94.356,-0.039l0.212,514.939l0.013,-0Z' style='fill-rule:nonzero;'/%3E%3C/g%3E%3C/g%3E%3Cpath d='M211.833,1862.5l0,184l44.267,0l0,-72.533l64,-0l0,-36.8l-64,-0l0,-37.867l72,0l0,-36.8l-116.267,0Z' style='fill-rule:nonzero;'/%3E%3Cpath d='M416.633,2005.7c-4.8,6.133 -7.466,9.867 -20,9.867c-16.266,-0 -20,-10.4 -20.533,-25.6l72,-0l0,-15.734c0,-41.6 -17.333,-63.733 -56,-63.733c-34.667,0 -56,18.4 -56,59.733l0,18.667c0,33.067 18.133,60.267 60.267,60.267c24.266,-0 40.266,-6.667 49.6,-22.934l-29.334,-20.533Zm-24.266,-61.6c9.333,0 14.933,4.533 15.733,19.2l-31.733,0c1.066,-12 5.6,-19.2 16,-19.2Z' style='fill-rule:nonzero;'/%3E%3Cpath d='M571.3,1932.9c-7.733,-14.933 -19.733,-22.4 -34.933,-22.4c-15.2,0 -24,7.733 -28,12.8l-0,-10.133l-38.934,-0l0,133.333l40,0l0,-76c0,-17.867 6.667,-25.867 18.134,-25.867c7.733,0 11.466,5.6 13.866,9.6l29.867,-21.333Z' style='fill-rule:nonzero;'/%3E%3Cpath d='M580.633,2046.5l40,0l0,-76.267c0,-17.066 5.334,-25.6 19.2,-25.6c12.8,0 17.067,8 17.067,25.867l-0,76l40,0l-0,-83.733c-0,-40.534 -22.933,-52.267 -49.067,-52.267c-14.133,0 -24,7.467 -28.266,12.8l-0,-10.133l-38.934,-0l0,133.333Z' style='fill-rule:nonzero;'/%3E%3Cpath d='M822.5,1932.63c-10.4,-17.066 -29.6,-22.133 -51.467,-22.133c-34.133,0 -53.333,16 -53.333,42.667c-0,26.133 19.467,38.4 49.6,45.066c12.533,2.667 17.067,4.534 17.067,9.6c-0,4.8 -5.334,7.2 -14.134,7.2c-15.2,0 -20.533,-4.266 -25.066,-10.4l-30.934,22.4c12,16.267 29.6,22.134 56.8,22.134c34.4,-0 53.334,-15.734 53.334,-42.4c-0,-24.534 -13.6,-39.2 -50.134,-46.134c-12.266,-2.4 -16.533,-4.533 -16.533,-9.066c-0,-5.867 6.933,-6.934 12.533,-6.934c12.267,0 17.6,3.467 22.667,9.334l29.6,-21.334Z' style='fill-rule:nonzero;'/%3E%3Cpath d='M961.7,1970.23c-0,-38.133 -20.8,-59.733 -50.933,-59.733c-11.734,0 -20.267,3.467 -26.4,9.333l-0,-6.666l-40,-0l-0,184l40,-0l-0,-53.334c5.866,3.467 14.133,5.334 26.133,5.334c33.6,-0 51.2,-25.6 51.2,-60.267l-0,-18.667Zm-58.667,45.334c-15.466,-0 -18.666,-10.667 -18.666,-26.134l-0,-15.733c-0,-19.733 4.266,-29.6 18.666,-29.6c14.4,-0 18.667,9.867 18.667,29.6l-0,11.733c-0,17.6 -2.133,30.134 -18.667,30.134Z' style='fill-rule:nonzero;'/%3E%3Cpath d='M1083.57,1932.9c-7.734,-14.933 -19.734,-22.4 -34.934,-22.4c-15.2,0 -24,7.733 -28,12.8l0,-10.133l-38.933,-0l-0,133.333l40,0l-0,-76c-0,-17.867 6.667,-25.867 18.133,-25.867c7.734,0 11.467,5.6 13.867,9.6l29.867,-21.333Z' style='fill-rule:nonzero;'/%3E%3Cpath d='M1166.77,2005.7c-4.8,6.133 -7.467,9.867 -20,9.867c-16.267,-0 -20,-10.4 -20.534,-25.6l72,-0l0,-15.734c0,-41.6 -17.333,-63.733 -56,-63.733c-34.666,0 -56,18.4 -56,59.733l0,18.667c0,33.067 18.134,60.267 60.267,60.267c24.267,-0 40.267,-6.667 49.6,-22.934l-29.333,-20.533Zm-24.267,-61.6c9.333,0 14.933,4.533 15.733,19.2l-31.733,0c1.067,-12 5.6,-19.2 16,-19.2Z' style='fill-rule:nonzero;'/%3E%3Cpath d='M1295.83,2005.7c-4.266,6.933 -9.333,9.867 -18.4,9.867c-19.733,-0 -21.866,-12.534 -21.866,-30.134l-0,-11.733c-0,-19.733 4.266,-29.6 21.866,-29.6c9.867,0 14.4,4.8 18.134,10.133l29.866,-20.8c-9.066,-15.2 -25.866,-22.933 -46.933,-22.933c-41.6,0 -62.933,20.533 -62.933,59.733l-0,18.667c-0,35.733 21.333,60.267 60.266,60.267c25.067,-0 39.734,-6.934 49.6,-22.934l-29.6,-20.533Z' style='fill-rule:nonzero;'/%3E%3Cpath d='M1338.77,2046.5l40,0l-0,-76.267c-0,-17.066 5.333,-25.6 19.2,-25.6c12.8,0 17.066,8 17.066,25.867l0,76l40,0l0,-83.733c0,-40.534 -22.933,-52.267 -49.066,-52.267c-13.334,0 -22.934,6.667 -27.2,11.733l-0,-59.733l-40,0l-0,184Z' style='fill-rule:nonzero;'/%3E%3Cpath d='M1555.57,2005.7c-4.8,6.133 -7.467,9.867 -20,9.867c-16.267,-0 -20,-10.4 -20.534,-25.6l72,-0l0,-15.734c0,-41.6 -17.333,-63.733 -56,-63.733c-34.666,0 -56,18.4 -56,59.733l0,18.667c0,33.067 18.134,60.267 60.267,60.267c24.267,-0 40.267,-6.667 49.6,-22.934l-29.333,-20.533Zm-24.267,-61.6c9.333,0 14.933,4.533 15.733,19.2l-31.733,0c1.067,-12 5.6,-19.2 16,-19.2Z' style='fill-rule:nonzero;'/%3E%3Cpath d='M1710.23,1932.9c-7.733,-14.933 -19.733,-22.4 -34.933,-22.4c-15.2,0 -24,7.733 -28,12.8l0,-10.133l-38.933,-0l-0,133.333l40,0l-0,-76c-0,-17.867 6.666,-25.867 18.133,-25.867c7.733,0 11.467,5.6 13.867,9.6l29.866,-21.333Z' style='fill-rule:nonzero;'/%3E%3Cpath d='M270.833,1714.58l468.75,0' style='fill:none;stroke:%23000;stroke-width:58.33px;'/%3E%3C/g%3E%3C/svg%3E">
+        <div>
+            <h1>Fernsprecher</h1>
+            <p>IntelliJ logs in your browser.</p>
+        </div>
+        <div id="about">
+            <p>Build by Kolja
+                <a href="https://twitter.com/dumdidum" target="_blank"> <img class="icon"
+                                                                             src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M12 0c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm6.066 9.645c.183 4.04-2.83 8.544-8.164 8.544-1.622 0-3.131-.476-4.402-1.291 1.524.18 3.045-.244 4.252-1.189-1.256-.023-2.317-.854-2.684-1.995.451.086.895.061 1.298-.049-1.381-.278-2.335-1.522-2.304-2.853.388.215.83.344 1.301.359-1.279-.855-1.641-2.544-.889-3.835 1.416 1.738 3.533 2.881 5.92 3.001-.419-1.796.944-3.527 2.799-3.527.825 0 1.572.349 2.096.907.654-.128 1.27-.368 1.824-.697-.215.671-.67 1.233-1.263 1.589.581-.07 1.135-.224 1.649-.453-.384.578-.87 1.084-1.433 1.489z'/%3E%3C/svg%3E">
+                </a>
+                with ❤️</p>
+
+            <div id="plugin">
+                <ul>
+                    <li>
+                        <a href="https://github.com/coolya/Fernsprecher/issues/new" target="_blank">Report a Problem <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M12 0c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm2.218 18.616c-.354.069-.468-.149-.468-.336v-1.921c0-.653-.229-1.079-.481-1.296 1.56-.173 3.198-.765 3.198-3.454 0-.765-.273-1.389-.721-1.879.072-.177.312-.889-.069-1.853 0 0-.587-.188-1.923.717-.561-.154-1.159-.231-1.754-.234-.595.003-1.193.08-1.753.235-1.337-.905-1.925-.717-1.925-.717-.379.964-.14 1.676-.067 1.852-.448.49-.722 1.114-.722 1.879 0 2.682 1.634 3.282 3.189 3.459-.2.175-.381.483-.444.936-.4.179-1.413.488-2.037-.582 0 0-.37-.672-1.073-.722 0 0-.683-.009-.048.426 0 0 .46.215.777 1.024 0 0 .405 1.25 2.353.826v1.303c0 .185-.113.402-.462.337-2.782-.925-4.788-3.549-4.788-6.641 0-3.867 3.135-7 7-7s7 3.133 7 7c0 3.091-2.003 5.715-4.782 6.641z'/%3E%3C/svg%3E"> </a>
+                    </li>
+                    <li>
+                        <a href="https://github.com/coolya/Fernsprecher" target="_blank">Source Code <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M12 0c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm2.218 18.616c-.354.069-.468-.149-.468-.336v-1.921c0-.653-.229-1.079-.481-1.296 1.56-.173 3.198-.765 3.198-3.454 0-.765-.273-1.389-.721-1.879.072-.177.312-.889-.069-1.853 0 0-.587-.188-1.923.717-.561-.154-1.159-.231-1.754-.234-.595.003-1.193.08-1.753.235-1.337-.905-1.925-.717-1.925-.717-.379.964-.14 1.676-.067 1.852-.448.49-.722 1.114-.722 1.879 0 2.682 1.634 3.282 3.189 3.459-.2.175-.381.483-.444.936-.4.179-1.413.488-2.037-.582 0 0-.37-.672-1.073-.722 0 0-.683-.009-.048.426 0 0 .46.215.777 1.024 0 0 .405 1.25 2.353.826v1.303c0 .185-.113.402-.462.337-2.782-.925-4.788-3.549-4.788-6.641 0-3.867 3.135-7 7-7s7 3.133 7 7c0 3.091-2.003 5.715-4.782 6.641z'/%3E%3C/svg%3E"></a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div id="controls">
+        <div>
+            <p id="status-text" data-state="connecting"></p>
+        </div>
+    </div>
+    <div id="logs">
+        <table id="logs-table">
+            <thead>
+            <tr>
+                <th scope="col">Time</th>
+                <th scope="col">Level</th>
+                <th scope="col">Logger</th>
+                <th scope="col">Message</th>
+                <th scope="col">Trace</th>
+            </tr>
+            </thead>
+            <tbody id="logs-content"></tbody>
+        </table>
+    </div>
+</div>
+
+</body>
+</html>
