@@ -15,22 +15,11 @@ import io.netty.util.ReferenceCountUtil
 import org.apache.log4j.AppenderSkeleton
 import org.apache.log4j.LogManager
 import org.apache.log4j.spi.LoggingEvent
-import org.apache.logging.log4j.core.Filter
-import org.apache.logging.log4j.core.Layout
-import org.apache.logging.log4j.core.LogEvent
-import org.apache.logging.log4j.core.LoggerContext
-import org.apache.logging.log4j.core.appender.AbstractAppender
-import org.apache.logging.log4j.core.layout.PatternLayout
 import org.jetbrains.ide.HttpRequestHandler
 import org.jetbrains.ide.RestService
 import org.jetbrains.io.BuiltInServer
 import org.jetbrains.io.NettyUtil
-import java.io.Serializable
 import java.nio.channels.ClosedChannelException
-
-import org.apache.logging.log4j.core.config.LoggerConfig
-
-import org.apache.logging.log4j.core.config.AppenderRef
 
 
 class LogAppender(
@@ -91,6 +80,7 @@ class WebSocketLogForwarder : HttpRequestHandler() {
         val writer = RestService.createJsonWriter(out)
 
         writer.beginObject()
+        @Suppress("DEPRECATION")
         writer.name("level").value(event.level.toString())
         writer.name("message").value(event.renderedMessage)
         writer.name("time").value(event.timeStamp)
