@@ -1,6 +1,9 @@
+import org.jetbrains.changelog.closure
+import org.jetbrains.changelog.date
 plugins {
     id("org.jetbrains.intellij") version "0.6.5"
     kotlin("jvm") version "1.4.21"
+    id("org.jetbrains.changelog") version "0.6.2"
 }
 
 group = "ws.logv"
@@ -19,9 +22,21 @@ dependencies {
 intellij {
     version = "2019.3"
 }
+
+
+changelog {
+    version = "${project.version}"
+    path = "${project.projectDir}/CHANGELOG.md"
+    header = closure { "[${project.version}] - ${date()}" }
+    headerParserRegex = """\d+\.\d+""".toRegex()
+    itemPrefix = "-"
+    keepUnreleasedSection = true
+    unreleasedTerm = "[Unreleased]"
+    groups = listOf("Added", "Changed", "Deprecated", "Removed", "Fixed", "Security")
+}
+
 tasks.getByName<org.jetbrains.intellij.tasks.PatchPluginXmlTask>("patchPluginXml") {
-    changeNotes("""
-      Initial Release for all 2019.3+ IDEs""")
+    changeNotes(closure { changelog.getUnreleased().toHTML() })
     untilBuild(null)
 }
 
@@ -34,4 +49,10 @@ val jb_token: String? by project
 
 tasks.getByName<org.jetbrains.intellij.tasks.PublishTask>("publishPlugin") {
     token(jb_token)
+}
+
+tasks.register("printVersion") {
+    doLast {
+        println(project.version)
+    }
 }

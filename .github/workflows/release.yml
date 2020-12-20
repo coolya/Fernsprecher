@@ -26,19 +26,28 @@ jobs:
       with:
         name: plugin
         path: build/distributions
+    - name: Set change log
+      id: changelog
+      run: |
+        echo 'CHANGELOG<<EOF' >> $GITHUB_ENV
+        ./gradlew getChangelog --console=plain -q --no-header --unreleased >> $GITHUB_ENV
+        echo 'EOF' >> $GITHUB_ENV
+    - name: Set version
+      id: version
+      run: |
+        echo 'VERSION<<EOF' >> $GITHUB_ENV
+        ./gradlew printVersion --console=plain -q >> $GITHUB_ENV
+        echo 'EOF' >> $GITHUB_ENV
     - name: Create Release
       id: create_release
       uses: actions/create-release@v1
       env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
       with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
-          body: |
-            Changes in this Release
-            - First Change
-            - Second Change
-          draft: false
+          tag_name: v${{ env.VERSION }}
+          release_name: v${{ env.VERSION }}
+          body: {{env.CHANGELOG}}
+          draft: true
           prerelease: false
-    - name: Build with Gradle
-      run: ./gradlew publishPlugin -Pjb_token=${{ secrets.JB_TOKEN }}
+    #- name: Build with Gradle
+    #  run: ./gradlew publishPlugin -Pjb_token=${{ secrets.JB_TOKEN }}
