@@ -1,14 +1,54 @@
 let socket;
 
 const statusId = "status-text"
+const max_msg_key = "max-msgs"
+
+let shownLogger = new Set()
+let shownLevels = new Set()
+let messageRegex = new Set()
 
 function maxMsgs() {
-    return 1000
+    if (localStorage.getItem(max_msg_key) == null) {
+        localStorage.setItem(max_msg_key, "1000")
+    }
+    return parseInt(localStorage.getItem(max_msg_key))
 }
 
 function copyStacktrace(e) {
     let trace = e.parentElement.parentElement.getElementsByClassName("stacktrace-data")[0].getElementsByTagName("p")[0].innerHTML
     navigator.clipboard.writeText(trace).then(r => console.log("copied"));
+}
+
+function isFiltered(msg) {
+    if (shownLevels.size === 0 && shownLogger.size === 0 && messageRegex.size === 0) {
+        return false
+    }
+    if (shownLevels.size > 0) {
+        if (!shownLevels.has(msg.level)) {
+            return true
+        }
+    }
+    if (shownLogger.size > 0) {
+        if (!shownLogger.has(msg.logger)) {
+            return true
+        }
+    }
+    messageRegex.forEach(it => {
+        if (it.test(msg.message)) {
+            return false
+        }
+    })
+
+    return messageRegex.size > 0;
+}
+
+function filterExisting() {
+    let logs = document.getElementById("logs-content");
+    for (let i = 0; i < logs.children.length; i++) {
+        let item = logs.children.item(i);
+        let message = JSON.parse(item.dataset.message);
+        item.hidden = isFiltered(message)
+    }
 }
 
 function connect() {
@@ -63,9 +103,12 @@ function connect() {
 `
         }
 
-
-
+        row.dataset.message = msg
         row.append(stacktrace)
+
+        if(isFiltered(msg)) {
+            row.hidden = true
+        }
 
         // don't scroll for new message if the user scrolled up
         let atBottom = (window.innerHeight + window.scrollY) >= document.body.offsetHeight

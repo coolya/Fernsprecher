@@ -2,19 +2,17 @@
 
 ## [Unreleased]
 
+Use new IntelliJ Logging API
+
+- Remove log4j implementation
+- Use `java.util.logging` to intercept the logs
+
+## [1.1]
+
 Compatibility with Projector
 
-### Added
-
-### Changed
 - User classes instrumented by Projector to open the browser. 
-### Deprecated
 
-### Removed
-
-### Fixed
-
-### Security
 
 ## [1.0]
 

@@ -12,31 +12,32 @@ import io.netty.handler.codec.http.HttpMethod
 import io.netty.handler.codec.http.QueryStringDecoder
 import io.netty.handler.codec.http.websocketx.*
 import io.netty.util.ReferenceCountUtil
-import org.apache.log4j.AppenderSkeleton
-import org.apache.log4j.LogManager
-import org.apache.log4j.spi.LoggingEvent
 import org.jetbrains.ide.HttpRequestHandler
 import org.jetbrains.ide.RestService
 import org.jetbrains.io.BuiltInServer
 import org.jetbrains.io.NettyUtil
 import java.nio.channels.ClosedChannelException
+import java.util.logging.Handler
+import java.util.logging.LogRecord
 
 
+@Suppress("UnstableApiUsage")
 class LogAppender(
     private val reqHandler: WebSocketLogForwarder
-) :
-    AppenderSkeleton() {
+) : Handler() {
+
+    override fun publish(record: LogRecord?) {
+        if(record != null) {
+            reqHandler.logMsg(record)
+        }
+    }
+
+    override fun flush() {
+        //noop
+    }
 
     override fun close() {
-
-    }
-
-    override fun requiresLayout(): Boolean {
-        return false
-    }
-
-    override fun append(event: LoggingEvent) {
-        reqHandler.logMsg(event)
+        //noop
     }
 }
 
@@ -60,6 +61,7 @@ class WebSocketChannelAdapter(val messageReceived: (TextWebSocketFrame, Channel)
                 closed()
                 ctx.channel().close()
             }
+
             is TextWebSocketFrame -> messageReceived(msg, ctx.channel())
             else -> throw UnsupportedOperationException("${msg.javaClass.name} type not supported")
         }
@@ -70,25 +72,24 @@ class WebSocketLogForwarder : HttpRequestHandler() {
 
     init {
         val appender = LogAppender(this)
-        LogManager.getRootLogger().addAppender(appender)
+        java.util.logging.Logger.getLogger("").addHandler(appender)
     }
 
     private val connectedClients = mutableListOf<WebSocketClient>()
 
-    fun logMsg(event: LoggingEvent) {
+    fun logMsg(event: LogRecord) {
         val out = BufferExposingByteArrayOutputStream()
         val writer = RestService.createJsonWriter(out)
 
         writer.beginObject()
-        @Suppress("DEPRECATION")
         writer.name("level").value(event.level.toString())
-        writer.name("message").value(event.renderedMessage)
-        writer.name("time").value(event.timeStamp)
+        writer.name("message").value(event.message)
+        writer.name("time").value(event.millis)
         writer.name("logger").value(event.loggerName)
-        if (event.throwableStrRep != null) {
+        if (event.thrown != null) {
             writer.name("stacktrace").beginArray()
-            event.throwableStrRep.forEach {
-                writer.value(it)
+            event.thrown.stackTrace.forEach {
+                writer.value(it.toString())
             }
             writer.endArray()
         }
@@ -98,11 +99,9 @@ class WebSocketLogForwarder : HttpRequestHandler() {
     }
 
     override fun isSupported(request: FullHttpRequest): Boolean {
-        return request.method() === HttpMethod.GET &&
-                "WebSocket".equals(
-                    request.headers().getAsString(HttpHeaderNames.UPGRADE),
-                    ignoreCase = true
-                ) && request.uri().startsWith("/fernsprecher/logs")
+        return request.method() === HttpMethod.GET && "WebSocket".equals(
+            request.headers().getAsString(HttpHeaderNames.UPGRADE), ignoreCase = true
+        ) && request.uri().startsWith("/fernsprecher/logs")
     }
 
     private fun messageReceived(client: WebSocketClient, frame: TextWebSocketFrame, channel: Channel) {
@@ -114,9 +113,7 @@ class WebSocketLogForwarder : HttpRequestHandler() {
     }
 
     override fun process(
-        urlDecoder: QueryStringDecoder,
-        request: FullHttpRequest,
-        context: ChannelHandlerContext
+        urlDecoder: QueryStringDecoder, request: FullHttpRequest, context: ChannelHandlerContext
     ): Boolean {
 
         val factory = WebSocketServerHandshakerFactory(
