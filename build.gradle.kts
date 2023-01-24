@@ -1,7 +1,7 @@
 import org.jetbrains.changelog.closure
 import org.jetbrains.changelog.date
 plugins {
-    id("org.jetbrains.intellij") version "1.4.0"
+    id("org.jetbrains.intellij") version "1.12.0"
     kotlin("jvm") version "1.6.21"
     id("org.jetbrains.changelog") version "0.6.2"
 }
