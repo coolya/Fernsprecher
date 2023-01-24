@@ -3,7 +3,7 @@ import org.jetbrains.changelog.date
 plugins {
     id("org.jetbrains.intellij") version "1.12.0"
     kotlin("jvm") version "1.8.0"
-    id("org.jetbrains.changelog") version "0.6.2"
+    id("org.jetbrains.changelog") version "2.0.0"
 }
 
 group = "ws.logv"
