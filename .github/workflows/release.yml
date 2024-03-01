@@ -23,7 +23,7 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew runPluginVerifier
       - name: Artifacts Upload
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: plugin
           path: build/distributions
