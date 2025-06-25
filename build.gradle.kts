@@ -1,9 +1,9 @@
-import org.jetbrains.changelog.closure
-import org.jetbrains.changelog.date
+import org.jetbrains.changelog.Changelog
+import java.time.LocalDate
 plugins {
     id("org.jetbrains.intellij") version "1.13.3"
     kotlin("jvm") version "1.9.24"
-    id("org.jetbrains.changelog") version "0.6.2"
+    id("org.jetbrains.changelog") version "2.2.1"
 }
 
 group = "ws.logv"
@@ -24,14 +24,14 @@ intellij {
 
 
 changelog {
-    version = "${project.version}"
-    path = "${project.projectDir}/CHANGELOG.md"
-    header = closure { "[${project.version}] - ${date()}" }
-    headerParserRegex = """\d+\.\d+""".toRegex()
-    itemPrefix = "-"
-    keepUnreleasedSection = true
-    unreleasedTerm = "[Unreleased]"
-    groups = listOf("Added", "Changed", "Deprecated", "Removed", "Fixed", "Security")
+    version.set("${project.version}")
+    path.set("${project.projectDir}/CHANGELOG.md")
+    header.set(provider { "[${project.version}] - ${LocalDate.now()}" })
+    headerParserRegex.set("""\d+\.\d+""".toRegex())
+    itemPrefix.set("-")
+    keepUnreleasedSection.set(true)
+    unreleasedTerm.set("[Unreleased]")
+    groups.set(listOf("Added", "Changed", "Deprecated", "Removed", "Fixed", "Security"))
 }
 
 tasks.getByName<org.jetbrains.intellij.tasks.PatchPluginXmlTask>("patchPluginXml") {
