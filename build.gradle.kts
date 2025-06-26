@@ -1,7 +1,7 @@
 import org.jetbrains.changelog.Changelog
 import java.time.LocalDate
 plugins {
-    id("org.jetbrains.intellij") version "1.13.3"
+    id("org.jetbrains.intellij") version "1.17.4"
     kotlin("jvm") version "1.9.24"
     id("org.jetbrains.changelog") version "2.2.1"
 }
