@@ -1,8 +1,8 @@
 import org.jetbrains.changelog.Changelog
 import java.time.LocalDate
 plugins {
-    id("org.jetbrains.intellij") version "1.13.3"
-    kotlin("jvm") version "1.9.24"
+    id("org.jetbrains.intellij") version "1.17.4"
+    kotlin("jvm") version "2.0.21"
     id("org.jetbrains.changelog") version "2.2.1"
 }
 
@@ -19,7 +19,7 @@ dependencies {
 
 // See https://github.com/JetBrains/gradle-intellij-plugin/
 intellij {
-    version.set("2022.2")
+    version.set("2023.1")
 }
 
 
@@ -35,7 +35,7 @@ changelog {
 }
 
 tasks.getByName<org.jetbrains.intellij.tasks.PatchPluginXmlTask>("patchPluginXml") {
-    changeNotes.set(changelog.getUnreleased().toHTML())
+    changeNotes.set(changelog.renderItem(changelog.getUnreleased(), org.jetbrains.changelog.Changelog.OutputType.HTML))
     untilBuild.set("")
 }
 
