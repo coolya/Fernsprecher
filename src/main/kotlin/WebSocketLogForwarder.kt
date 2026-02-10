@@ -17,6 +17,10 @@ import org.jetbrains.ide.RestService
 import org.jetbrains.io.BuiltInServer
 import org.jetbrains.io.NettyUtil
 import java.nio.channels.ClosedChannelException
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.logging.Handler
 import java.util.logging.LogRecord
 
@@ -69,7 +73,7 @@ class WebSocketChannelAdapter(val messageReceived: (TextWebSocketFrame, Channel)
 }
 
 class WebSocketLogForwarder : HttpRequestHandler() {
-
+    val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS")
     init {
         val appender = LogAppender(this)
         java.util.logging.Logger.getLogger("").addHandler(appender)
@@ -84,7 +88,8 @@ class WebSocketLogForwarder : HttpRequestHandler() {
         writer.beginObject()
         writer.name("level").value(event.level.toString())
         writer.name("message").value(event.message)
-        writer.name("time").value(event.millis)
+        val localDateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(event.millis), ZoneId.systemDefault())
+        writer.name("time").value(localDateTime.format(formatter))
         writer.name("logger").value(event.loggerName)
         if (event.thrown != null) {
             writer.name("stacktrace").beginArray()
